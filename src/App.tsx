@@ -5,8 +5,6 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://ercnehjywfphrg
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVyY25laGp5d2ZwaHJncWFlcHppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1NzIxNTAsImV4cCI6MjA4NjE0ODE1MH0.I0mFLNeqxK25nJEoF4omFN58F0HelrVoyT65Fi4tZB8'
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-const DEV_PASSWORD = import.meta.env.VITE_DEV_PASSWORD || '8842706'
-
 interface Department {
   name: string
   fullName: string
@@ -45,9 +43,6 @@ interface DeptStats {
 }
 
 function App() {
-  const [authenticated, setAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
   const [now, setNow] = useState(new Date())
   const [stats, setStats] = useState<Record<string, DeptStats>>({})
   const [loading, setLoading] = useState(false)
@@ -103,48 +98,10 @@ function App() {
     setLoading(false)
   }, [])
 
+  // 起動時に統計を取得 (ログイン認証は廃止し、URL を開いた瞬間に表示する)
   useEffect(() => {
-    if (authenticated) {
-      fetchStats()
-    }
-  }, [authenticated, fetchStats])
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (password === DEV_PASSWORD) {
-      setAuthenticated(true)
-      setError('')
-    } else {
-      setError('パスワードが正しくありません')
-    }
-  }
-
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <form onSubmit={handleLogin} className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm space-y-6">
-          <h1 className="text-2xl font-bold text-center text-gray-800">共愛会 勤務表管理ポータル</h1>
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">パスワード</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="パスワードを入力"
-            />
-          </div>
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors"
-          >
-            ログイン
-          </button>
-        </form>
-      </div>
-    )
-  }
+    fetchStats()
+  }, [fetchStats])
 
   const formatDate = (d: Date) => {
     return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }) +
@@ -166,12 +123,6 @@ function App() {
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium disabled:opacity-50"
             >
               {loading ? '更新中...' : '全部署を更新'}
-            </button>
-            <button
-              onClick={() => setAuthenticated(false)}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
-            >
-              ログアウト
             </button>
           </div>
         </div>
